@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -7,7 +9,6 @@ const morgan = require("morgan");
 // Impor router
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
-
 const authRoutes = require('./routes/auth');
 
 // Middleware
@@ -28,4 +29,4 @@ app.use("/api/reports", reportRoutes);
 app.use('/api/auth', authRoutes);
 app.listen(PORT, () => {
   console.log(`Express server running at http://localhost:${PORT}/`);
-});
+}); 
