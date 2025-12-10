@@ -30,3 +30,7 @@ app.use('/api/auth', authRoutes);
 app.listen(PORT, () => {
   console.log(`Express server running at http://localhost:${PORT}/`);
 }); 
+
+const path = require('path'); 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

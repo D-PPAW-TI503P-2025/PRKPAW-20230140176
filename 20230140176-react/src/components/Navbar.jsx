@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // gunakan named import
 
+const API_BASE_URL = "http://localhost:3001";
+
+const getPhotoUrl = (buktiFoto) => {
+  if (!buktiFoto) return null;
+
+  // kalau sudah full URL
+  if (/^https?:\/\//i.test(buktiFoto)) return buktiFoto;
+
+  // kalau sudah ada /uploads di depannya
+  if (buktiFoto.startsWith("/uploads")) {
+    return `${API_BASE_URL}${buktiFoto}`;
+  }
+
+  // kalau cuma nama file
+  return `${API_BASE_URL}/uploads/${buktiFoto}`;
+};
+
 const AdminPage = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +50,7 @@ const AdminPage = () => {
       setError("");
       const token = localStorage.getItem("token");
 
-      let url = "http://localhost:3001/api/reports/daily";
+      let url = `${API_BASE_URL}/api/reports/daily`;
       const params = new URLSearchParams();
       if (filterNama) params.append("nama", filterNama);
       if (filterTanggal) params.append("tanggal", filterTanggal);
@@ -45,12 +62,12 @@ const AdminPage = () => {
         },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.message || "Gagal mengambil laporan presensi.");
       }
 
-      const data = await response.json();
       setReports(data.data || []);
     } catch (err) {
       setError(err.message);
@@ -65,7 +82,11 @@ const AdminPage = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatDate = (dateStr) =>
-    dateStr ? new Date(dateStr).toLocaleString("id-ID") : "-";
+    dateStr
+      ? new Date(dateStr).toLocaleString("id-ID", {
+          timeZone: "Asia/Jakarta",
+        })
+      : "-";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black text-slate-100 flex justify-center items-start py-10 px-4">
@@ -143,56 +164,83 @@ const AdminPage = () => {
                   <th className="px-3 py-2.5 text-left font-semibold">
                     Longitude
                   </th>
+                  <th className="px-3 py-2.5 text-left font-semibold">
+                    Bukti Foto
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {reports.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="8"
+                      colSpan="9"
                       className="text-center p-5 text-slate-300 bg-slate-900/60"
                     >
                       Tidak ada data presensi.
                     </td>
                   </tr>
                 ) : (
-                  reports.map((item, idx) => (
-                    <tr
-                      key={item.id}
-                      className={
-                        idx % 2 === 0
-                          ? "bg-slate-900/70 hover:bg-slate-800/80 transition-colors"
-                          : "bg-slate-950/70 hover:bg-slate-800/80 transition-colors"
-                      }
-                    >
-                      <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
-                        {item.id}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-slate-100">
-                        {item.user?.nama || "-"}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-slate-300">
-                        {item.user?.email || "-"}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800">
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-600/30 border border-emerald-400/60 text-emerald-200">
-                          {item.user?.role || "-"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
-                        {formatDate(item.checkIn)}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
-                        {formatDate(item.checkOut)}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-amber-300">
-                        {item.latitude ?? "-"}
-                      </td>
-                      <td className="px-3 py-2 border-t border-slate-800 text-amber-300">
-                        {item.longitude ?? "-"}
-                      </td>
-                    </tr>
-                  ))
+                  reports.map((item, idx) => {
+                    const photoUrl = getPhotoUrl(item.buktiFoto);
+
+                    return (
+                      <tr
+                        key={item.id}
+                        className={
+                          idx % 2 === 0
+                            ? "bg-slate-900/70 hover:bg-slate-800/80 transition-colors"
+                            : "bg-slate-950/70 hover:bg-slate-800/80 transition-colors"
+                        }
+                      >
+                        <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
+                          {item.id}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-slate-100">
+                          {item.user?.nama || "-"}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-slate-300">
+                          {item.user?.email || "-"}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800">
+                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-600/30 border border-emerald-400/60 text-emerald-200">
+                            {item.user?.role || "-"}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
+                          {formatDate(item.checkIn)}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-slate-200">
+                          {formatDate(item.checkOut)}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-amber-300">
+                          {item.latitude ?? "-"}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800 text-amber-300">
+                          {item.longitude ?? "-"}
+                        </td>
+                        <td className="px-3 py-2 border-t border-slate-800">
+                          {photoUrl ? (
+                            <a
+                              href={photoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-block"
+                            >
+                              <img
+                                src={photoUrl}
+                                alt="Bukti presensi"
+                                className="h-10 w-10 md:h-12 md:w-12 object-cover rounded-lg border border-slate-700"
+                              />
+                            </a>
+                          ) : (
+                            <span className="text-slate-500 text-xs">
+                              Tidak ada
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

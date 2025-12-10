@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import Webcam from 'react-webcam';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function DashboardPage() {
