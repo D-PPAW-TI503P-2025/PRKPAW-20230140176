@@ -5,6 +5,7 @@ import RegisterPage from './components/RegisterPage';
 import DashboardPage from './components/DashboardPage';
 import PresensiPage from './components/PresensiPage';
 import AdminPage from './components/Navbar'; 
+import SensorPage from "./components/SensorPage";
 import "leaflet/dist/leaflet.css";
 
 
@@ -38,6 +39,9 @@ function App() {
             >
               Presensi
             </Link>
+
+            <Link to="/monitoring" className="...">Monitoring Suhu</Link>
+
             <Link
               to="/admin"
               className="cyber-btn neon-yellow"
@@ -55,6 +59,9 @@ function App() {
             <Route path="/presensi" element={<PresensiPage />} />
             <Route path="/admin" element={<AdminPage />} /> {/* ⬅️ Route Admin */}
             <Route path="/" element={<LoginPage />} />
+
+            {/* Sensor */}
+            <Route path="/monitoring" element={<SensorPage />} />
           </Routes>
         </div>
       </div>
